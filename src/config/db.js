@@ -21,7 +21,7 @@ const connectDB = async () => {
 
   } catch (error) {
     console.error("MongoDB Error:", error.message);
-    throw error;
+    return null; // IMPORTANT for Vercel stability
   }
 };
 
