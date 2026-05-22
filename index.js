@@ -3,11 +3,14 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./src/config/db');
+
 const userRoutes = require('./src/routes/userRoutes');
 const petRoutes = require('./src/routes/petRoutes');
 const requestRoutes = require('./src/routes/requestRoutes');
 
 dotenv.config();
+
+// Connect DB safely (important for Vercel)
 connectDB();
 
 const app = express();
@@ -31,7 +34,6 @@ app.get('/', (req, res) => {
   res.send('Pet Adoption API is running...');
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// ❌ REMOVE app.listen() COMPLETELY
+
+module.exports = app;
