@@ -7,22 +7,18 @@ if (!cached) {
 }
 
 const connectDB = async () => {
-  try {
-    if (cached.conn) return cached.conn;
+  if (cached.conn) return cached.conn;
 
-    if (!cached.promise) {
-      cached.promise = mongoose.connect(process.env.MONGODB_URI);
-    }
-
-    cached.conn = await cached.promise;
-
-    console.log("MongoDB Connected");
-    return cached.conn;
-
-  } catch (error) {
-    console.error("MongoDB Error:", error.message);
-    return null; // IMPORTANT for Vercel stability
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGODB_URI, {
+      bufferCommands: false
+    }).then((mongoose) => {
+      return mongoose;
+    });
   }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
 };
 
 module.exports = connectDB;
