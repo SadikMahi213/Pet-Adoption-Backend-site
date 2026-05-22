@@ -1,4 +1,5 @@
 console.log("ENV CHECK:", process.env.MONGODB_URI ? "FOUND" : "MISSING");
+console.log("MONGO:", process.env.MONGODB_URI ? "OK" : "MISSING");
 
 const express = require('express');
 const cors = require('cors');
