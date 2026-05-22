@@ -13,6 +13,7 @@ const requestRoutes = require('./src/routes/requestRoutes');
 
 const app = express();
 
+// middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
@@ -21,14 +22,27 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// DB connect middleware (IMPORTANT FIX)
+// --------------------
+// SAFE DB CONNECTION (NO MIDDLEWARE BLOCKING)
+// --------------------
+let isConnected = false;
+
+const safeConnectDB = async () => {
+  if (!isConnected) {
+    await connectDB();
+    isConnected = true;
+    console.log("MongoDB Connected");
+  }
+};
+
+// attach DB before routes (safe)
 app.use(async (req, res, next) => {
   try {
-    await connectDB();
+    await safeConnectDB();
     next();
   } catch (err) {
     console.log("DB ERROR:", err);
-    res.status(500).json({ error: "DB connection failed" });
+    res.status(500).json({ error: "Database connection failed" });
   }
 });
 
@@ -37,8 +51,14 @@ app.use('/api/users', userRoutes);
 app.use('/api/pets', petRoutes);
 app.use('/api/requests', requestRoutes);
 
+// test route
 app.get('/', (req, res) => {
   res.send('Pet Adoption API is running...');
 });
 
-module.exports = app;
+// --------------------
+// VERCEL EXPORT (IMPORTANT)
+// --------------------
+module.exports = (req, res) => {
+  app(req, res);
+};
