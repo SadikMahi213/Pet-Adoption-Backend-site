@@ -23,28 +23,11 @@ app.use(express.json());
 app.use(cookieParser());
 
 // --------------------
-// SAFE DB CONNECTION (NO MIDDLEWARE BLOCKING)
+// INIT DB ON START (IMPORTANT FIX)
 // --------------------
-let isConnected = false;
-
-const safeConnectDB = async () => {
-  if (!isConnected) {
-    await connectDB();
-    isConnected = true;
-    console.log("MongoDB Connected");
-  }
-};
-
-// attach DB before routes (safe)
-app.use(async (req, res, next) => {
-  try {
-    await safeConnectDB();
-    next();
-  } catch (err) {
-    console.log("DB ERROR:", err);
-    res.status(500).json({ error: "Database connection failed" });
-  }
-});
+connectDB()
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log("MongoDB ERROR:", err));
 
 // routes
 app.use('/api/users', userRoutes);
@@ -56,9 +39,7 @@ app.get('/', (req, res) => {
   res.send('Pet Adoption API is running...');
 });
 
-// --------------------
-// VERCEL EXPORT (IMPORTANT)
-// --------------------
+// Vercel export
 module.exports = (req, res) => {
   app(req, res);
 };
