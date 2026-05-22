@@ -5,14 +5,11 @@ const cookieParser = require('cookie-parser');
 
 dotenv.config();
 
-console.log("ENV CHECK:", process.env.MONGODB_URI ? "FOUND" : "MISSING");
-
 const connectDB = require('./src/config/db');
+
 const userRoutes = require('./src/routes/userRoutes');
 const petRoutes = require('./src/routes/petRoutes');
 const requestRoutes = require('./src/routes/requestRoutes');
-
-connectDB().catch(err => console.log("DB ERROR:", err));
 
 const app = express();
 
@@ -24,6 +21,18 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+// DB connect middleware (IMPORTANT FIX)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.log("DB ERROR:", err);
+    res.status(500).json({ error: "DB connection failed" });
+  }
+});
+
+// routes
 app.use('/api/users', userRoutes);
 app.use('/api/pets', petRoutes);
 app.use('/api/requests', requestRoutes);
